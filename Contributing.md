@@ -8,7 +8,7 @@ This mono repo should contain the commits from all of the packages.
 Each package has it's own repo.
 
 ## Packages
-Each package is in the packages directory. 
+Each package is in the packages directory.
 
 Code changes that touch multiple modules should be done on the bitcore repo.
 This way one branch can update multiple modules.
@@ -22,7 +22,7 @@ The monorepo packages can be updated via git subtrees, then submitted to the bit
 Example:
 ```
 git co -b feature/bitcore-node-update
-git subtree pull --prefix=packages/bitcore-node git@github.com:bitpay/bitcore-node.git branchToPull
+git subtree pull --prefix=packages/bitcore-node git@github.com:ch4ot1c/bitcore-node.git branchToPull
 git push -u origin feature/bitcore-node-update
 # Create MR from origin:feature/bitcore-node-update to upstream:bitcore
 ```
@@ -31,7 +31,7 @@ git push -u origin feature/bitcore-node-update
 ## Updating Repos from Bitcore Package
 Changes to the mono repo can be pushed to the package repo.
 ```
-git subtree push --prefix=packages/bitcore-node git@github.com:micahriggan/bitcore-node.git branchToPush
+git subtree push --prefix=packages/bitcore-node git@github.com:ch4ot1c/bitcore-node.git branchToPush
 ```
 
 ## Adding New Packages from Existing Repos
@@ -40,7 +40,7 @@ Packages can be added via Lerna or via git subtrees.
 ```
 lerna import ~/somedir/path-to-bitcore-repo --flatten
 # OR
-git subtree add --prefix=packages/bitcore-repo-to-add git@github.com:bitpay/bitcore-repo-to-add.git branchToAdd
+git subtree add --prefix=packages/bitcore-repo-to-add git@github.com:ch4ot1c/bitcore-repo-to-add.git branchToAdd
 ```
 
 This will merge all of the commits into the bitcore history

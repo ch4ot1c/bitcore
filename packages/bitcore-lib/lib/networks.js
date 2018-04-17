@@ -129,20 +129,17 @@ function removeNetwork(network) {
 addNetwork({
   name: 'livenet',
   alias: 'mainnet',
-  pubkeyhash: 0x00,
+  pubkeyhash: 0x1325,
   privatekey: 0x80,
-  scripthash: 0x05,
+  scripthash: 0x13af,
   xpubkey: 0x0488b21e,
   xprivkey: 0x0488ade4,
-  networkMagic: 0xf9beb4d9,
-  port: 8333,
+  zaddr: 0x16a8,
+  zkey: 0xab36,
+  networkMagic: 0xa8eaa2cd,
+  port: 7933,
   dnsSeeds: [
-    'seed.bitcoin.sipa.be',
-    'dnsseed.bluematt.me',
-    'dnsseed.bitcoin.dashjr.org',
-    'seed.bitcoinstats.com',
-    'seed.bitnodes.io',
-    'bitseed.xf2.org'
+    'dnsseed.btcprivate.org'
   ]
 });
 
@@ -155,11 +152,13 @@ var livenet = get('livenet');
 addNetwork({
   name: 'testnet',
   alias: 'regtest',
-  pubkeyhash: 0x6f,
+  pubkeyhash: 0x1957,
   privatekey: 0xef,
-  scripthash: 0xc4,
+  scripthash: 0x19e0,
   xpubkey: 0x043587cf,
-  xprivkey: 0x04358394
+  xprivkey: 0x04358394,
+  zaddr: 0x16c0,
+  zkey: 0xac08
 });
 
 /**
@@ -171,13 +170,10 @@ var testnet = get('testnet');
 // Add configurable values for testnet/regtest
 
 var TESTNET = {
-  PORT: 18333,
-  NETWORK_MAGIC: BufferUtil.integerAsBuffer(0x0b110907),
+  PORT: 17933,
+  NETWORK_MAGIC: BufferUtil.integerAsBuffer(0xf61bf6d6),
   DNS_SEEDS: [
-    'testnet-seed.bitcoin.petertodd.org',
-    'testnet-seed.bluematt.me',
-    'testnet-seed.alexykot.me',
-    'testnet-seed.bitcoin.schildbach.de'
+    'dnsseed.testnet1.btcprivate.org'
   ]
 };
 
@@ -188,8 +184,8 @@ for (var key in TESTNET) {
 }
 
 var REGTEST = {
-  PORT: 18444,
-  NETWORK_MAGIC: BufferUtil.integerAsBuffer(0xfabfb5da),
+  PORT: 17944,
+  NETWORK_MAGIC: BufferUtil.integerAsBuffer(0xaae83f5f),
   DNS_SEEDS: []
 };
 

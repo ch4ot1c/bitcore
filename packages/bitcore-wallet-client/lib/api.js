@@ -661,7 +661,7 @@ API.prototype.getBalanceFromPrivateKey = function(privateKey, coin, cb) {
     coin = 'btc';
   }
   var B = Bitcore_[coin];
- 
+
   var privateKey = new B.PrivateKey(privateKey);
   var address = privateKey.publicKey.toAddress();
   self.getUtxos({
@@ -1020,7 +1020,7 @@ API.signTxp = function(txp, derivedXPrivKey) {
 
   var t = Utils.buildTx(txp);
 
-  var signatures = _.map(privs, function(priv, i) { 
+  var signatures = _.map(privs, function(priv, i) {
     return t.getSignatures(priv);
   });
 
@@ -1675,12 +1675,12 @@ API.prototype.savePreferences = function(preferences, cb) {
 API.prototype.fetchPayPro = function(opts, cb) {
   $.checkArgument(opts)
     .checkArgument(opts.payProUrl);
- 
+
   PayPro.get({
     url: opts.payProUrl,
     http: this.payProHttp,
     coin: this.credentials.coin || 'btc',
-  }, function(err, paypro) { 
+  }, function(err, paypro) {
     if (err)
       return cb(err);
 

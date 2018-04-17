@@ -60,7 +60,7 @@ function Transaction(serialized) {
 }
 var CURRENT_VERSION = 1;
 var DEFAULT_NLOCKTIME = 0;
-var MAX_BLOCK_SIZE = 1000000;
+var MAX_BLOCK_SIZE = 2000000;
 
 // Minimum amount for an output for it not to be considered a dust output
 Transaction.DUST_AMOUNT = 546;

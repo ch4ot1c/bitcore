@@ -110,8 +110,8 @@ URI.isValid = function(arg, knownParams) {
 URI.parse = function(uri) {
   var info = URL.parse(uri, true);
 
-  if (info.protocol !== 'bitcoin:') {
-    throw new TypeError('Invalid bitcoin URI');
+  if (info.protocol !== 'bitcoinprivate:') {
+    throw new TypeError('Invalid bitcoinprivate URI');
   }
 
   // workaround to host insensitiveness
@@ -205,7 +205,7 @@ URI.prototype.toString = function() {
   _.extend(query, this.extras);
 
   return URL.format({
-    protocol: 'bitcoin:',
+    protocol: 'bitcoinprivate:',
     host: this.address,
     query: query
   });
