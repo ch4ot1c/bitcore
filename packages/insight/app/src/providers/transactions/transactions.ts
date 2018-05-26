@@ -122,7 +122,7 @@ export class TxsProvider {
         if (args.blockHash) {
             queryString += `?blockHash=${args.blockHash}`;
         }
-        return this.http.get(this.api.apiPrefix + 'BTC/testnet/tx' + queryString)
+        return this.http.get(this.api.apiPrefix + 'BTC/mainnet/tx' + queryString)
             .map((data) => {
                 let txs: Array<ApiTx> = data.json();
                 let appTxs: Array<AppTx> = txs.map(this.toAppTx);
@@ -131,7 +131,7 @@ export class TxsProvider {
     }
 
     public getTx(hash: string): Observable<{ tx: AppTx }> {
-        return this.http.get(this.api.apiPrefix + 'BTC/testnet/tx/' + hash)
+        return this.http.get(this.api.apiPrefix + 'BTC/mainnet/tx/' + hash)
             .map((data) => {
                 let apiTx: ApiTx = data.json()[0];
                 let appTx: AppTx = this.toAppTx(apiTx);

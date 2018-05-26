@@ -83,7 +83,7 @@ export class BlocksProvider {
         };
     }
     public getBlocks(): Observable<{ blocks: Array<AppBlock> }> {
-        return this.http.get(this.api.apiPrefix + 'BTC/testnet/block')
+        return this.http.get(this.api.apiPrefix + 'BTC/mainnet/block')
             .map((data) => {
                 let blocks: Array<ApiBlock> = data.json();
                 let appBlocks: Array<AppBlock> = blocks.map(this.toAppBlock);
@@ -92,7 +92,7 @@ export class BlocksProvider {
     }
 
     public getBlock(hash: string): Observable<{ block: AppBlock }> {
-        return this.http.get(this.api.apiPrefix + 'BTC/testnet/block/' + hash).
+        return this.http.get(this.api.apiPrefix + 'BTC/mainnet/block/' + hash).
             map((data) => {
                 let block: ApiBlock = data.json();
                 let appBlock: AppBlock = this.toAppBlock(block);
