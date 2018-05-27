@@ -82,6 +82,7 @@ export class P2pService extends EventEmitter {
       messages: this.messages
     });
 
+
     if (this.pool != null) {
       this.pool.on('peerready', peer => {
         logger.info(`Connected to peer ${peer.host}`, {
@@ -94,7 +95,8 @@ export class P2pService extends EventEmitter {
       this.pool.on('peerdisconnect', peer => {
         logger.warn(`Not connected to peer ${peer.host}`, {
           chain: this.chain,
-          network: this.network
+          network: this.network,
+          trustedPeers: this.trustedPeers
         });
       });
 

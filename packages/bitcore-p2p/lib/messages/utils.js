@@ -97,6 +97,8 @@ module.exports = utils = {
     }
 
     for (var i = 0; i < starts.length; i++) {
+      console.log(starts[i].length);
+      console.log(starts[i]);
       if (starts[i].length !== 32) {
         throw new Error('Invalid hash ' + i + ' length: ' + starts[i].length);
       }

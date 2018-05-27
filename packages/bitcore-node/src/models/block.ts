@@ -75,6 +75,7 @@ BlockSchema.index({ previousBlockHash: 1 });
 BlockSchema.statics.addBlock = async (params: AddBlockParams) => {
   const { block, chain, network, parentChain, forkHeight } = params;
   const header = block.header.toObject();
+  console.log(header);
   const blockTime = header.time * 1000;
 
   await BlockModel.handleReorg({ header, chain, network });

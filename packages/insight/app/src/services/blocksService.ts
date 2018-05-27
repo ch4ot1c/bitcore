@@ -14,7 +14,7 @@ export class BlocksService {
   constructor(private http: Http) {}
 
   public getLatestBlocks(): void {
-    this.http.request('/api/BTC/testnet/block').subscribe((res: Response) => {
+    this.http.request('/api/BTC/mainnet/block').subscribe((res: Response) => {
       const data: {
         blocks: InsightBlockObject[],
         length: number,

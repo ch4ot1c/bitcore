@@ -19,6 +19,9 @@ var $ = bitcore.util.preconditions;
  * @constructor
  */
 function GetheadersMessage(arg, options) {
+  console.log('GetheadersMessage');
+  //console.log(arg);
+  //console.log(options);
   Message.call(this, options);
   this.command = 'getheaders';
   this.version = options.protocolVersion;
@@ -32,6 +35,7 @@ function GetheadersMessage(arg, options) {
 inherits(GetheadersMessage, Message);
 
 GetheadersMessage.prototype.setPayload = function(payload) {
+  console.log(payload);
   var parser = new BufferReader(payload);
   $.checkArgument(!parser.finished(), 'No data received in payload');
 
@@ -51,6 +55,7 @@ GetheadersMessage.prototype.getPayload = function() {
   bw.writeUInt32LE(this.version);
   bw.writeVarintNum(this.starts.length);
   for (var i = 0; i < this.starts.length; i++) {
+    console.log(this.starts[i]);
     bw.write(this.starts[i]);
   }
   if (this.stop.length !== 32) {
