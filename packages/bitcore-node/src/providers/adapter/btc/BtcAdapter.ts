@@ -23,7 +23,7 @@ export class BTCAdapter
       merkleRoot: header.merkleRoot,
       version: Number(header.version),
       bits: Number(header.bits),
-      nonce: Number(header.nonce),
+      nonce: header.nonce,
       time: new Date(header.time * 1000),
       timeNormalized: new Date(header.time * 1000),
       transactionCount: block.transactions.length,

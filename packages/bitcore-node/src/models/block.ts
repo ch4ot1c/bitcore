@@ -17,7 +17,7 @@ export interface IBlock {
   merkleRoot: string;
   time: Date;
   timeNormalized: Date;
-  nonce: number;
+  nonce: string;
   previousBlockHash: string;
   nextBlockHash: string;
   transactionCount: number;
@@ -57,7 +57,7 @@ const BlockSchema = new Schema({
   merkleRoot: String,
   time: Date,
   timeNormalized: Date,
-  nonce: Number,
+  nonce: String,
   previousBlockHash: String,
   nextBlockHash: String,
   transactionCount: Number,
@@ -75,7 +75,7 @@ BlockSchema.index({ previousBlockHash: 1 });
 BlockSchema.statics.addBlock = async (params: AddBlockParams) => {
   const { block, chain, network, parentChain, forkHeight } = params;
   const header = block.header.toObject();
-  console.log(header);
+  //console.log(header);
   const blockTime = header.time * 1000;
 
   await BlockModel.handleReorg({ header, chain, network });

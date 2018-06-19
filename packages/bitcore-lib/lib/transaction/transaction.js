@@ -41,6 +41,7 @@ function Transaction(serialized) {
   }
   this.inputs = [];
   this.outputs = [];
+  this.joinSplits = [];
   this._inputAmount = undefined;
   this._outputAmount = undefined;
 
@@ -356,11 +357,13 @@ Transaction.prototype.fromBufferReader = function(reader) {
 
   // check for segwit
   var hasWitnesses = false;
+  /*
   if (sizeTxIns === 0 && reader.buf[reader.pos] !== 0) {
     reader.pos += 1;
     hasWitnesses = true;
     sizeTxIns = reader.readVarintNum();
   }
+  */
 
   for (var i = 0; i < sizeTxIns; i++) {
     var input = Input.fromBufferReader(reader);
@@ -371,6 +374,8 @@ Transaction.prototype.fromBufferReader = function(reader) {
   for (var j = 0; j < sizeTxOuts; j++) {
     this.outputs.push(Output.fromBufferReader(reader));
   }
+
+  this.nLockTime = reader.readUInt32LE();
 
   if (this.version >= 2) {
     var sizeJoinSplits = reader.readVarintNum();
@@ -397,7 +402,6 @@ Transaction.prototype.fromBufferReader = function(reader) {
     }
   }
 
-  this.nLockTime = reader.readUInt32LE();
   return this;
 };
 
@@ -489,7 +493,7 @@ Transaction.prototype.fromObject = function fromObject(arg) {
   this.version = transaction.version;
   if (this.version >= 2) {
     _.each(transaction.joinSplits, function(joinSplit) {
-      self.joinSplits.push(new JSDescription(joinSplit));
+      self.joinSplits.push(new JoinSplit(joinSplit));
     });
     if (self.joinSplits.length > 0) {
       self.joinSplitPubKey = BufferUtil.reverse(new Buffer(transaction.joinSplitPubKey, 'hex'));
