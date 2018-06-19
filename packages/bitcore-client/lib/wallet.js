@@ -12,8 +12,7 @@ class Wallet {
     if (!this.masterKey) {
       return new Wallet(this.create(params));
     }
-    this.baseUrl =
-      this.baseUrl || `http://127.0.0.1:3000/api/${this.chain}/${this.network}`;
+    this.baseUrl = this.baseUrl || `http://127.0.0.1:3000/api/${this.chain}/${this.network}`;
   }
 
   saveWallet() {
@@ -28,17 +27,10 @@ class Wallet {
     const mnemonic = new Mnemonic(phrase);
     const privateKey = mnemonic.toHDPrivateKey(password);
     const pubKey = privateKey.hdPublicKey.publicKey.toString();
-    const masterKey = Encrypter.generateEncryptionKey();
-    const keyObj = Object.assign(
-      privateKey.toObject(),
-      privateKey.hdPublicKey.toObject()
-    );
-    const encryptionKey = Encrypter.encryptEncryptionKey(masterKey, password);
-    const encPrivateKey = Encrypter.encryptPrivateKey(
-      JSON.stringify(keyObj),
-      pubKey,
-      masterKey
-    );
+    const walletEncryptionKey = Encrypter.generateEncryptionKey();
+    const keyObj = Object.assign(privateKey.toObject(), privateKey.hdPublicKey.toObject());
+    const encryptionKey = Encrypter.encryptEncryptionKey(walletEncryptionKey, password);
+    const encPrivateKey = Encrypter.encryptPrivateKey(JSON.stringify(keyObj), pubKey, walletEncryptionKey);
     const storage = new Storage({
       path,
       errorIfExists: true,
@@ -60,32 +52,28 @@ class Wallet {
 
   static async loadWallet(params) {
     const { path } = params;
-    const storage =
-      params.storage ||
-      new Storage({ path, errorIfExists: false, createIfMissing: false });
+    const storage = params.storage || new Storage({ path, errorIfExists: false, createIfMissing: false });
     const loadedWallet = await storage.loadWallet();
     return new Wallet(Object.assign(loadedWallet, { storage }));
   }
 
+  lock() {
+    this.unlocked = undefined;
+  }
+
   async unlock(password) {
     const encMasterKey = this.masterKey;
-    let validPass = await Bcrypt.compare(password, this.password).catch(
-      () => false
-    );
+    let validPass = await Bcrypt.compare(password, this.password).catch(() => false);
     if (!validPass) {
       throw new Error('Incorrect Password');
     }
-    this.encryptionKey = await Encrypter.decryptEncryptionKey(
-      this.encryptionKey,
-      password
-    );
-    const masterKeyStr = await Encrypter.decryptPrivateKey(
-      encMasterKey,
-      this.pubKey,
-      this.encryptionKey
-    );
-    this.masterKey = JSON.parse(masterKeyStr);
-    this.unlocked = true;
+    const encryptionKey = await Encrypter.decryptEncryptionKey(this.encryptionKey, password);
+    const masterKeyStr = await Encrypter.decryptPrivateKey(encMasterKey, this.pubKey, encryptionKey);
+    const masterKey = JSON.parse(masterKeyStr);
+    this.unlocked = {
+      encryptionKey,
+      masterKey
+    };
     this.client = new Client({
       baseUrl: this.baseUrl,
       authKey: this.getAuthSigningKey()
@@ -102,7 +90,7 @@ class Wallet {
     }
     const payload = {
       name: this.name,
-      pubKey: this.masterKey.xpubkey,
+      pubKey: this.unlocked.masterKey.xpubkey,
       path: this.derivationPath,
       network: this.network,
       chain: this.chain
@@ -111,31 +99,32 @@ class Wallet {
   }
 
   getAuthSigningKey() {
-    return new bitcoreLib.HDPrivateKey(this.masterKey.xprivkey).deriveChild(
-      'm/2'
-    ).privateKey;
+    return new bitcoreLib.HDPrivateKey(this.unlocked.masterKey.xprivkey).deriveChild('m/2').privateKey;
   }
 
-  getBalance(params) {
-    return this.client.getBalance({ pubKey: this.masterKey.xpubkey });
+  getBalance() {
+    const { masterKey } = this.unlocked;
+    return this.client.getBalance({ pubKey: masterKey.xpubkey });
   }
 
-  getUtxos(params) {
+  getUtxos() {
+    const { masterKey } = this.unlocked;
     return this.client.getCoins({
-      pubKey: this.masterKey.xpubkey,
+      pubKey: masterKey.xpubkey,
       includeSpent: false
     });
   }
 
   async newTx(params) {
+    const utxos = params.utxos || (await this.getUtxos(params));
     const payload = {
       network: this.network,
       chain: this.chain,
       addresses: params.addresses,
       amount: params.amount,
-      utxos: params.utxos || (await this.getUtxos(params)),
       change: params.change,
-      fee: params.fee
+      fee: params.fee,
+      utxos
     };
     return txProvider.create(payload);
   }
@@ -150,11 +139,8 @@ class Wallet {
   }
 
   async importKeys(params) {
-    const { keys, password } = params;
-    if (password) {
-      await this.unlock(password);
-    }
-    const encryptionKey = this.unlocked ? this.encryptionKey : null;
+    const { keys } = params;
+    const { encryptionKey } = this.unlocked;
     for (const key of keys) {
       let keyToSave = { key, encryptionKey };
       await this.storage.addKey(keyToSave);
@@ -172,16 +158,20 @@ class Wallet {
 
   async signTx(params) {
     let { tx } = params;
-    const utxos = await this.getUtxos(params);
+    const utxos = params.utxos || (await this.getUtxos(params));
     const payload = {
       chain: this.chain,
       network: this.network,
       tx,
       utxos
     };
+    const { encryptionKey } = this.unlocked;
     let inputAddresses = txProvider.getSigningAddresses(payload);
     let keyPromises = inputAddresses.map(address => {
-      return this.storage.getKey({ address });
+      return this.storage.getKey({
+        address,
+        encryptionKey
+      });
     });
     let keys = await Promise.all(keyPromises);
     return txProvider.sign({ ...payload, keys });

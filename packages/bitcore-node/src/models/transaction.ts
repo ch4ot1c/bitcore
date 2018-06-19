@@ -7,7 +7,7 @@ import { TransformOptions } from "../types/TransformOptions";
 import { ChainNetwork } from "../types/ChainNetwork";
 import { TransformableModel } from "../types/TransformableModel";
 import logger from "../logger";
-import { LoggifyObject } from "../decorators/Loggify";
+import { LoggifyObject, LoggifyFunction } from "../decorators/Loggify";
 import { Bitcoin } from "../types/namespaces/Bitcoin";
 const config = require("../config");
 const Chain = require("../chain");
@@ -32,7 +32,7 @@ export type TransactionQuery = {[key in keyof ITransaction]?: any}&
 type ITransactionDoc = ITransaction & Document;
 type ITransactionModelDoc = ITransactionDoc & TransformableModel<ITransactionDoc>;
 
-type BatchImportMethodParams = {
+export type BatchImportMethodParams = {
   txs: Array<Bitcoin.Transaction>;
   height: number;
   blockTime?: Date;
@@ -224,7 +224,7 @@ TransactionSchema.statics.getMintOps = async function(
         let address = "";
         let scriptBuffer = output.script && output.script.toBuffer();
         if (scriptBuffer) {
-          address = output.script.toAddress(network).toString();
+          address = output.script.toAddress(network).toString(true);
           if (
             address === "false" &&
             output.script.classify() === "Pay to public key"
@@ -232,7 +232,7 @@ TransactionSchema.statics.getMintOps = async function(
             let hash = Chain[chain].lib.crypto.Hash.sha256ripemd160(
               output.script.chunks[0].buf
             );
-            address = Chain[chain].lib.Address(hash, network).toString();
+            address = Chain[chain].lib.Address(hash, network).toString(true);
           }
         }
 
@@ -282,9 +282,7 @@ TransactionSchema.statics.getMintOps = async function(
             )
             .map(wallet => wallet.wallet);
 
-          Object.assign(mintOp, {
-            updateOne: { update: { $set: { wallets: transformedWallets } } }
-          });
+          mintOp.updateOne.update.$set.wallets = transformedWallets;
           return mintOp;
         });
       }
@@ -310,7 +308,7 @@ TransactionSchema.statics.getSpendOps = function(
     let txid = tx._hash;
     for (let input of tx.inputs) {
       let inputObj = input.toObject();
-      const updateQuery = {
+      const updateQuery: any = {
         updateOne: {
           filter: {
             mintTxid: inputObj.prevTxId,
@@ -328,9 +326,7 @@ TransactionSchema.statics.getSpendOps = function(
         }
       };
       if (config.pruneSpentScripts && height > 0) {
-        Object.assign(updateQuery, {
-          updateOne: { update: { $unset: { script: null } } }
-        });
+        updateQuery.updateOne.update.$unset= {script: null};
       }
       spendOps.push(updateQuery);
     }
@@ -342,25 +338,7 @@ TransactionSchema.statics.getTransactions = function(params: {
   query: TransactionQuery;
 }) {
   let query = params.query;
-  return TransactionModel.collection.aggregate([
-    { $match: query },
-    {
-      $lookup: {
-        from: "coins",
-        localField: "txid",
-        foreignField: "spentTxid",
-        as: "inputs"
-      }
-    },
-    {
-      $lookup: {
-        from: "coins",
-        localField: "txid",
-        foreignField: "mintTxid",
-        as: "outputs"
-      }
-    }
-  ]);
+  return TransactionModel.find(query).cursor();
 };
 
 TransactionSchema.statics._apiTransform = function(
@@ -383,6 +361,7 @@ TransactionSchema.statics._apiTransform = function(
   return JSON.stringify(transform);
 };
 
+CoinModel.collection.bulkWrite = LoggifyFunction(CoinModel.collection.bulkWrite, 'CoinModel::collection.bulkWrite', CoinModel.collection);
 LoggifyObject(TransactionSchema.statics, 'TransactionSchema');
 export let TransactionModel: ITransactionModel = model<
   ITransactionDoc,
