@@ -27,6 +27,8 @@ var Script = require('../script');
 var PrivateKey = require('../privatekey');
 var BN = require('../crypto/bn');
 
+var JoinSplit = require('./joinsplit');
+
 /**
  * Represents a transaction, a set of inputs and outputs to change ownership of tokens
  *
@@ -370,6 +372,18 @@ Transaction.prototype.fromBufferReader = function(reader) {
     this.outputs.push(Output.fromBufferReader(reader));
   }
 
+  if (this.version >= 2) {
+    var sizeJoinSplits = reader.readVarintNum();
+    for (var j = 0; j < sizeJoinSplits; j++) {
+      this.joinSplits.push(JoinSplit.fromBufferReader(reader));
+    }
+
+    if (sizeJoinSplits > 0) {
+      this.joinSplitPubKey = reader.read(32);
+      this.joinSplitSig = reader.read(64);
+    }
+  }
+
   if (hasWitnesses) {
     for (var k = 0; k < sizeTxIns; k++) {
       var itemCount = reader.readVarintNum();
@@ -402,8 +416,21 @@ Transaction.prototype.toObject = Transaction.prototype.toJSON = function toObjec
     version: this.version,
     inputs: inputs,
     outputs: outputs,
+    joinSplits: joinSplits,
     nLockTime: this.nLockTime
   };
+  if (this.version >= 2) {
+    var joinSplits = [];
+    this.joinSplits.forEach(function(joinSplit) {
+      joinSplits.push(joinSplit.toObject());
+    });
+    obj.joinSplits = joinSplits;
+    if (this.joinSplits.length > 0) {
+      obj.joinSplitPubKey = BufferUtil.reverse(this.joinSplitPubKey).toString('hex');
+      obj.joinSplitSig = this.joinSplitSig.toString('hex');
+    }
+  }
+
   if (this._changeScript) {
     obj.changeScript = this._changeScript.toString();
   }
@@ -460,6 +487,15 @@ Transaction.prototype.fromObject = function fromObject(arg) {
   }
   this.nLockTime = transaction.nLockTime;
   this.version = transaction.version;
+  if (this.version >= 2) {
+    _.each(transaction.joinSplits, function(joinSplit) {
+      self.joinSplits.push(new JSDescription(joinSplit));
+    });
+    if (self.joinSplits.length > 0) {
+      self.joinSplitPubKey = BufferUtil.reverse(new Buffer(transaction.joinSplitPubKey, 'hex'));
+      self.joinSplitSig = new Buffer(transaction.joinSplitSig, 'hex');
+    }
+  }
   this._checkConsistency(arg);
   return this;
 };

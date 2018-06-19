@@ -98,7 +98,8 @@ BlockHeader._fromObject = function _fromObject(data) {
     time: data.time,
     timestamp: data.time,
     bits: data.bits,
-    nonce: nonce
+    nonce: nonce,
+    solution: solution
   };
   return info;
 };
