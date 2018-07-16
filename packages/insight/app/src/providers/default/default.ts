@@ -17,7 +17,7 @@ export class DefaultProvider {
   }= {
     '%DEFAULT_CURRENCY%': process.env.DEFAULT_CURRENCY || 'BTC',
     '%API_PREFIX%': process.env.API_PREFIX || '/api',
-    '%NETWORK%': process.env.NETWORK || 'regtest'
+    '%NETWORK%': process.env.NETWORK || 'mainnet'
   };
 
   constructor(public http: Http) { }
