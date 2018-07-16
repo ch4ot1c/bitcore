@@ -78,16 +78,16 @@ URI.fromObject = function fromObject(json) {
 };
 
 /**
- * Check if an bitcoin URI string is valid
+ * Check if an bitcoin private URI string is valid
  *
  * @example
  * ```javascript
  *
- * var valid = URI.isValid('bitcoin:12A1MyfXbW6RhdRAZEqofac5jCQQjwEPBu');
+ * var valid = URI.isValid('bitcoinprivate:12A1MyfXbW6RhdRAZEqofac5jCQQjwEPBu');
  * // true
  * ```
  *
- * @param {string|Object} data - A bitcoin URI string or an Object
+ * @param {string|Object} data - A bitcoin private URI string or an Object
  * @param {Array.<string>=} knownParams - Required non-standard params
  * @returns {boolean} Result of uri validation
  */
@@ -101,17 +101,17 @@ URI.isValid = function(arg, knownParams) {
 };
 
 /**
- * Convert a bitcoin URI string into a simple object.
+ * Convert a bitcoin private URI string into a simple object.
  *
- * @param {string} uri - A bitcoin URI string
- * @throws {TypeError} Invalid bitcoin URI
+ * @param {string} uri - A bitcoin private URI string
+ * @throws {TypeError} Invalid bitcoin private  URI
  * @returns {Object} An object with the parsed params
  */
 URI.parse = function(uri) {
   var info = URL.parse(uri, true);
 
-  if (info.protocol !== 'bitcoin:') {
-    throw new TypeError('Invalid bitcoin URI');
+  if (info.protocol !== 'bitcoinprivate:') {
+    throw new TypeError('Invalid bitcoin private URI');
   }
 
   // workaround to host insensitiveness
@@ -186,7 +186,7 @@ URI.prototype.toObject = URI.prototype.toJSON = function toObject() {
 /**
  * Will return a the string representation of the URI
  *
- * @returns {string} Bitcoin URI string
+ * @returns {string} Bitcoin private URI string
  */
 URI.prototype.toString = function() {
   var query = {};
@@ -205,7 +205,7 @@ URI.prototype.toString = function() {
   _.extend(query, this.extras);
 
   return URL.format({
-    protocol: 'bitcoin:',
+    protocol: 'bitcoinprivate:',
     host: this.address,
     query: query
   });

@@ -16,7 +16,7 @@ export type IBlock = {
   merkleRoot: string;
   time: Date;
   timeNormalized: Date;
-  nonce: number;
+  nonce: string;
   previousBlockHash: string;
   nextBlockHash: string;
   transactionCount: number;
@@ -88,6 +88,7 @@ export class Block extends BaseModel<IBlock> {
           timeNormalized: new Date(blockTimeNormalized),
           bits: header.bits,
           nonce: header.nonce,
+          solution: header.solution,
           transactionCount: block.transactions.length,
           size: block.toBuffer().length,
           reward: block.transactions[0].outputAmount

@@ -23,6 +23,7 @@ var PublicKeyInput = Input.PublicKey;
 var MultiSigScriptHashInput = Input.MultiSigScriptHash;
 var MultiSigInput = Input.MultiSig;
 var Output = require('./output');
+var JoinSplit = require('./joinsplit');
 var Script = require('../script');
 var PrivateKey = require('../privatekey');
 var BN = require('../crypto/bn');
@@ -39,6 +40,7 @@ function Transaction(serialized) {
   }
   this.inputs = [];
   this.outputs = [];
+  this.joinSplits = [];
   this._inputAmount = undefined;
   this._outputAmount = undefined;
 
@@ -60,7 +62,7 @@ function Transaction(serialized) {
 }
 var CURRENT_VERSION = 1;
 var DEFAULT_NLOCKTIME = 0;
-var MAX_BLOCK_SIZE = 1000000;
+var MAX_BLOCK_SIZE = 2000000; // BTCP
 
 // Minimum amount for an output for it not to be considered a dust output
 Transaction.DUST_AMOUNT = 546;
@@ -370,6 +372,21 @@ Transaction.prototype.fromBufferReader = function(reader) {
     this.outputs.push(Output.fromBufferReader(reader));
   }
 
+  this.nLockTime = reader.readUInt32LE();
+
+  if (this.version >= 2) {
+    var sizeJoinSplits = reader.readVarintNum();
+    for (var j = 0; j < sizeJoinSplits; j++) {
+      this.joinSplits.push(JoinSplit.fromBufferReader(reader));
+    }
+
+    if (sizeJoinSplits > 0) {
+      this.joinSplitPubKey = reader.read(32);
+      this.joinSplitSig = reader.read(64);
+    }
+  }
+
+  // TODO BTCP SegWit Handling
   if (hasWitnesses) {
     for (var k = 0; k < sizeTxIns; k++) {
       var itemCount = reader.readVarintNum();
@@ -383,7 +400,6 @@ Transaction.prototype.fromBufferReader = function(reader) {
     }
   }
 
-  this.nLockTime = reader.readUInt32LE();
   return this;
 };
 
@@ -402,8 +418,22 @@ Transaction.prototype.toObject = Transaction.prototype.toJSON = function toObjec
     version: this.version,
     inputs: inputs,
     outputs: outputs,
+    joinSplits: joinSplits,
     nLockTime: this.nLockTime
   };
+
+  if (this.version >= 2) {
+    var joinSplits = [];
+    this.joinSplits.forEach(function(joinSplit) {
+      joinSplits.push(joinSplit.toObject());
+    });
+    obj.joinSplits = joinSplits;
+    if (this.joinSplits.length > 0) {
+      obj.joinSplitPubKey = BufferUtil.reverse(this.joinSplitPubKey).toString('hex');
+      obj.joinSplitSig = this.joinSplitSig.toString('hex');
+    }
+  }
+    
   if (this._changeScript) {
     obj.changeScript = this._changeScript.toString();
   }
@@ -460,6 +490,15 @@ Transaction.prototype.fromObject = function fromObject(arg) {
   }
   this.nLockTime = transaction.nLockTime;
   this.version = transaction.version;
+  if (this.version >= 2) {
+    _.each(transaction.joinSplits, function(joinSplit) {
+      self.joinSplits.push(new JoinSplit(joinSplit));
+    });
+    if (self.joinSplits.length > 0) {
+      self.joinSplitPubKey = BufferUtil.reverse(new Buffer(transaction.joinSplitPubKey, 'hex'));
+      self.joinSplitSig = new Buffer(transaction.joinSplitSig, 'hex');
+    }
+  }
   this._checkConsistency(arg);
   return this;
 };
