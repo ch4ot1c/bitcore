@@ -14,10 +14,12 @@ import { CurrencyProvider } from '../../providers/currency/currency';
 
 export type ApiBlock = {
   height: number;
-  nonce: number;
+  nonce: string;
+  solution: string;
   bits: number;
   size: number;
   hash: string;
+  reserved: string;
   merkleRoot: string;
   nextBlockHash: string;
   previousBlockHash: string;
@@ -31,8 +33,10 @@ export type ApiBlock = {
 
 export type AppBlock = {
   height: number;
+  reserved: string;
   merkleroot: string;
-  nonce: number;
+  nonce: string;
+  solution: string;
   size: number;
   confirmations: number;
   version: number;
@@ -59,13 +63,15 @@ export class BlocksProvider {
   constructor(public http: Http, private api: ApiProvider, public currency: CurrencyProvider) {}
 
   private toAppBlock(block: ApiBlock, bestHeight: number): AppBlock {
-    let difficulty: number = 0x1d00ffff / block.bits;
+    let difficulty: number = 0x1f07ffff / block.bits;
     return {
       height: block.height,
       confirmations: bestHeight - block.height,
       nonce: block.nonce,
+      solution: block.solution,
       size: block.size,
       virtualSize: block.size,
+      reserved: block.reserved,
       merkleroot: block.merkleRoot,
       version: block.version,
       difficulty: difficulty,

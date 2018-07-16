@@ -5,8 +5,10 @@ export type BlockHeaderObj = {
   time: number;
   version: string;
   merkleRoot: string;
+  reserved: string;
   bits: string;
   nonce: string;
+  solution: string;
 }
 export type BlockHeader = {
   toObject: () => BlockHeaderObj;
