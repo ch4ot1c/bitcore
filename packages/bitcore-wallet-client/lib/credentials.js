@@ -304,7 +304,7 @@ Credentials.prototype.getBaseAddressDerivationPath = function() {
       break;
   }
 
-  var coin = (this.network == 'livenet' ? "0" : "1");
+  var coin = (this.network == 'livenet' ? "183" : "1");
   return "m/" + purpose + "'/" + coin + "'/" + this.account + "'";
 };
 

@@ -383,7 +383,7 @@ API.prototype.seedFromRandomWithMnemonic = function(opts) {
   $.checkArgument(_.isUndefined(opts) || _.isObject(opts), 'DEPRECATED: argument should be an options object.');
 
   opts = opts || {};
-  this.credentials = Credentials.createWithMnemonic(opts.coin || 'btc', opts.network || 'livenet', opts.passphrase, opts.language || 'en', opts.account || 0);
+  this.credentials = Credentials.createWithMnemonic(opts.coin || 'btc', opts.network || 'livenet', opts.passphrase, opts.language || 'en', opts.account || 183);
 };
 
 API.prototype.getMnemonic = function() {
