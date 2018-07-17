@@ -148,7 +148,8 @@ addNetwork({
   networkMagic: 0xa8eaa2cd,
   port: 7933,
   dnsSeeds: [
-    'dnsseed.btcprivate.org'
+    'dnsseed.btcprivate.org',
+    'dnsseed.btcprivate.co'
   ]
 });
 
