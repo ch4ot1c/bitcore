@@ -97,7 +97,7 @@ Address.prototype._classifyArguments = function(data, network, type) {
   // transform and validate input data
   if ((data instanceof Buffer || data instanceof Uint8Array) && data.length === 20) {
     return Address._transformHash(data);
-  } else if ((data instanceof Buffer || data instanceof Uint8Array) && data.length === 21) {
+  } else if ((data instanceof Buffer || data instanceof Uint8Array) && data.length === 22) {
     return Address._transformBuffer(data, network, type);
   } else if (data instanceof PublicKey) {
     return Address._transformPublicKey(data);
@@ -162,8 +162,8 @@ Address._transformObject = function(data) {
 Address._classifyFromVersion = function(buffer) {
   var version = {};
 
-  var pubkeyhashNetwork = Networks.get(buffer[0], 'pubkeyhash');
-  var scripthashNetwork = Networks.get(buffer[0], 'scripthash');
+  var pubkeyhashNetwork = Networks.get(buffer.slice(0, 2), 'pubkeyhash');
+  var scripthashNetwork = Networks.get(buffer.slice(0, 2), 'scripthash');
 
   if (pubkeyhashNetwork) {
     version.network = pubkeyhashNetwork;
@@ -191,8 +191,8 @@ Address._transformBuffer = function(buffer, network, type) {
   if (!(buffer instanceof Buffer) && !(buffer instanceof Uint8Array)) {
     throw new TypeError('Address supplied is not a buffer.');
   }
-  if (buffer.length !== 1 + 20) {
-    throw new TypeError('Address buffers must be exactly 21 bytes.');
+  if (buffer.length !== 2 + 20) {
+    throw new TypeError('Address buffers must be exactly 22 bytes.');
   }
 
   var networkObj = Networks.get(network);
@@ -210,7 +210,7 @@ Address._transformBuffer = function(buffer, network, type) {
     throw new TypeError('Address has mismatched type.');
   }
 
-  info.hashBuffer = buffer.slice(1);
+  info.hashBuffer = buffer.slice(2);
   info.network = bufferVersion.network;
   info.type = bufferVersion.type;
   return info;
@@ -467,7 +467,8 @@ Address.prototype.isPayToScriptHash = function() {
  * @returns {Buffer} Bitcoin address buffer
  */
 Address.prototype.toBuffer = function() {
-  var version = Buffer.from([this.network[this.type]]);
+  var version = new Buffer(2);
+  version.writeUInt16BE(this.network[this.type], 0);
   return Buffer.concat([version, this.hashBuffer]);
 };
 
