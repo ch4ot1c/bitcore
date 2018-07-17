@@ -59,6 +59,8 @@ function get(arg, keys) {
  * @param {Number} data.scripthash - The scripthash prefix
  * @param {Number} data.xpubkey - The extended public key magic
  * @param {Number} data.xprivkey - The extended private key magic
+ * @param {Number} data.zaddr - The 'z' address prefix
+ * @param {Number} data.zkey - The 'z' spending key prefix
  * @param {Number} data.networkMagic - The network magic number
  * @param {Number} data.port - The network port
  * @param {Array}  data.dnsSeeds - An array of dns seeds
@@ -77,6 +79,13 @@ function addNetwork(data) {
     xpubkey: data.xpubkey,
     xprivkey: data.xprivkey
   });
+
+  if (data.zaddr || data.zkey) {
+    JSUtil.defineImmutable(network, {
+      zaddr: data.zaddr,
+      zkey: data.zkey
+    });
+  }
 
   if (data.networkMagic) {
     JSUtil.defineImmutable(network, {
