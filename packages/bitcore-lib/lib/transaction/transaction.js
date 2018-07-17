@@ -356,11 +356,14 @@ Transaction.prototype.fromBufferReader = function(reader) {
 
   // check for segwit
   var hasWitnesses = false;
+  // TODO handle for BTCP
+/*
   if (sizeTxIns === 0 && reader.buf[reader.pos] !== 0) {
     reader.pos += 1;
     hasWitnesses = true;
     sizeTxIns = reader.readVarintNum();
   }
+*/
 
   for (var i = 0; i < sizeTxIns; i++) {
     var input = Input.fromBufferReader(reader);
